@@ -19,21 +19,25 @@ type CreateRatingInput struct {
 	SteepTime       *float32 `json:"steep_time" binding:"required"`
 	MilkAmount      *float32 `json:"milk_amount" binding:"required"`
 	MilkHeatTime    *float32 `json:"milk_heat_time" binding:"required"`
+	TotalRating     *float32 `json:"total_rating"`
+	Notes           string   `json:"notes"`
 	CoffeeMadeDate  string   `json:"coffee_made_date" binding:"required"`
 }
 
 type UpdateRatingInput struct {
-	CoffeeAmount    float32 `json:"coffee_amount"`
-	CoffeeBrand     string  `json:"coffee_brand"`
-	CoffeeRoastType string  `json:"coffee_roast_type"`
-	BrewMethod      string  `json:"brew_method"`
-	GrindSize       string  `json:"grind_size"`
-	WaterAmount     float32 `json:"water_amount"`
-	WaterTemp       float32 `json:"water_temp"`
-	SteepTime       float32 `json:"steep_time"`
-	MilkAmount      float32 `json:"milk_amount"`
-	MilkHeatTime    float32 `json:"milk_heat_time"`
-	CoffeeMadeDate  string  `json:"coffee_made_date"`
+	CoffeeAmount    *float32 `json:"coffee_amount"`
+	CoffeeBrand     string   `json:"coffee_brand"`
+	CoffeeRoastType string   `json:"coffee_roast_type"`
+	BrewMethod      string   `json:"brew_method"`
+	GrindSize       string   `json:"grind_size"`
+	WaterAmount     *float32 `json:"water_amount"`
+	WaterTemp       *float32 `json:"water_temp"`
+	SteepTime       *float32 `json:"steep_time"`
+	MilkAmount      *float32 `json:"milk_amount"`
+	MilkHeatTime    *float32 `json:"milk_heat_time"`
+	TotalRating     *float32 `json:"total_rating"`
+	Notes           string   `json:"notes"`
+	CoffeeMadeDate  string   `json:"coffee_made_date"`
 }
 
 func GetRatings(c *gin.Context) {
@@ -75,10 +79,42 @@ func CreateRating(c *gin.Context) {
 		SteepTime:       *input.SteepTime,
 		MilkAmount:      *input.MilkAmount,
 		MilkHeatTime:    *input.MilkHeatTime,
+		TotalRating:     *input.TotalRating,
+		Notes:           input.Notes,
 		CoffeeMadeDate:  input.CoffeeMadeDate,
 	}
 
 	models.DB.Create(&rating)
 
 	c.JSON(http.StatusOK, gin.H{"data": rating})
+}
+
+func UpdateRating(c *gin.Context) {
+	var rating models.RatingSummary
+	if err := models.DB.Where("rating_id = ?", c.Param("id")).First(&rating).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Record not found!"})
+		return
+	}
+
+	var input UpdateRatingInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	models.DB.Model(&rating).Updates(input)
+
+	c.JSON(http.StatusOK, gin.H{"data": rating})
+}
+
+func DeleteRating(c *gin.Context) {
+	var rating models.RatingSummary
+	if err := models.DB.Where("rating_id = ?", c.Param("id")).First(&rating).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Record not found!"})
+		return
+	}
+
+	models.DB.Model(&rating).Delete(&rating)
+
+	c.JSON(http.StatusOK, gin.H{"data": true})
 }

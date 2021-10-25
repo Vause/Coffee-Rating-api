@@ -12,6 +12,8 @@ type RatingSummary struct {
 	SteepTime       float32 `json:"steep_time"`
 	MilkAmount      float32 `json:"milk_amount"`
 	MilkHeatTime    float32 `json:"milk_heat_time"`
+	TotalRating     float32 `json:"total_rating"`
+	Notes           string  `json:"notes"`
 	CoffeeMadeDate  string  `json:"coffee_made_date"`
 }
 
@@ -28,5 +30,7 @@ type RatingSummary struct {
 //     steep_time REAL,
 //     milk_amount REAL,
 //     milk_heat_time REAL,
+// 		total_rating REAL,
+//     notes TEXT,
 //     coffee_made_date NUMERIC
 // );
