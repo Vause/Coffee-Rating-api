@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/Vause/Coffee-Rating-api/models"
+	"github.com/Vause/Coffee-Rating-api/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -102,7 +103,8 @@ func UpdateRating(c *gin.Context) {
 		return
 	}
 
-	models.DB.Model(&rating).Updates(input)
+	var interfaceInput, _ = utils.StructToMap(input)
+	models.DB.Model(&rating).Updates(interfaceInput)
 
 	c.JSON(http.StatusOK, gin.H{"data": rating})
 }
