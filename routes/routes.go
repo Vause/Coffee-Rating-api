@@ -10,6 +10,7 @@ func SetUpRouter() *gin.Engine {
 
 	r := gin.Default()
 	r.Use(cors.Default())
+
 	v1 := r.Group("/v1")
 	{
 		v1.GET("ratings", controllers.GetRatings)
@@ -18,6 +19,5 @@ func SetUpRouter() *gin.Engine {
 		v1.PUT("ratings/:id", controllers.UpdateRating)
 		v1.DELETE("ratings/:id", controllers.DeleteRating)
 	}
-
 	return r
 }

@@ -1,13 +1,15 @@
 package controllers
 
 import (
-	"errors"
 	"net/http"
 
 	"github.com/Vause/Coffee-Rating-api/models"
 	"github.com/Vause/Coffee-Rating-api/utils"
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
+
+var zapLogger *zap.SugaredLogger
 
 type CreateRatingInput struct {
 	CoffeeAmount    *float32 `json:"coffee_amount" binding:"required"`
@@ -41,11 +43,16 @@ type UpdateRatingInput struct {
 	CoffeeMadeDate  string   `json:"coffee_made_date"`
 }
 
+func InitLog(logger *zap.SugaredLogger) {
+	zapLogger = logger
+}
+
 func GetRatings(c *gin.Context) {
 	var ratings []models.RatingSummary
 
 	if err := models.DB.Find(&ratings).Error; err != nil {
-		errors.New("Failure!")
+		zapLogger.Errorw("Get Ratings Failure",
+			"content", err.Error())
 	}
 
 	c.JSON(http.StatusOK, gin.H{"data": ratings})
@@ -55,6 +62,8 @@ func GetRatingById(c *gin.Context) {
 	var rating models.RatingSummary
 
 	if err := models.DB.Where("rating_id = ?", c.Param("id")).First(&rating).Error; err != nil {
+		zapLogger.Errorw("Get Rating Failure",
+			"content", err.Error())
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Record not found!"})
 		return
 	}
@@ -65,6 +74,8 @@ func GetRatingById(c *gin.Context) {
 func CreateRating(c *gin.Context) {
 	var input CreateRatingInput
 	if err := c.ShouldBindJSON(&input); err != nil {
+		zapLogger.Errorw("Error Creating Rating",
+			"err", err.Error())
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -93,12 +104,17 @@ func CreateRating(c *gin.Context) {
 func UpdateRating(c *gin.Context) {
 	var rating models.RatingSummary
 	if err := models.DB.Where("rating_id = ?", c.Param("id")).First(&rating).Error; err != nil {
+		zapLogger.Errorw("Update Rating Error",
+			"err", err.Error())
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Record not found!"})
 		return
 	}
 
 	var input UpdateRatingInput
 	if err := c.ShouldBindJSON(&input); err != nil {
+		zapLogger.Errorw("Error Binding Record",
+			"err", err.Error(),
+			"rating", rating)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -112,6 +128,8 @@ func UpdateRating(c *gin.Context) {
 func DeleteRating(c *gin.Context) {
 	var rating models.RatingSummary
 	if err := models.DB.Where("rating_id = ?", c.Param("id")).First(&rating).Error; err != nil {
+		zapLogger.Errorw("Delete Rating Failure",
+			"err", err.Error())
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Record not found!"})
 		return
 	}

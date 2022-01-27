@@ -18,13 +18,21 @@ package main
 
 import (
 	"github.com/Vause/Coffee-Rating-api/cmd"
+	"github.com/Vause/Coffee-Rating-api/controllers"
 	"github.com/Vause/Coffee-Rating-api/models"
 	"github.com/Vause/Coffee-Rating-api/routes"
+	"go.uber.org/zap"
 )
 
 func main() {
+	logger, _ := zap.NewProduction()
+	defer logger.Sync()
+	sugar := logger.Sugar()
+
+	controllers.InitLog(sugar)
+
 	cmd.Execute()
-	models.ConnectDb()
+	models.ConnectDb(sugar)
 	r := routes.SetUpRouter()
 	r.Run("localhost:9001")
 
